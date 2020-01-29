@@ -1,5 +1,5 @@
-class JokesController < ApplicationController
-  before_action :set_joke, only: [:show, :update, :destroy]
+class JokesController < OpenReadController
+  before_action :set_joke, only: %i[update destroy]
 
   # GET /jokes
   def index
@@ -10,12 +10,12 @@ class JokesController < ApplicationController
 
   # GET /jokes/1
   def show
-    render json: @joke
+    render json: Joke.find(params[:id])
   end
 
   # POST /jokes
   def create
-    @joke = Joke.new(joke_params)
+    @joke = current_user.jokes.build(joke_params)
 
     if @joke.save
       render json: @joke, status: :created, location: @joke
@@ -41,11 +41,13 @@ class JokesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_joke
-      @joke = Joke.find(params[:id])
+      puts current_user
+
+      @joke = current_user.jokes.find(params[:id])
     end
 
     # Only allow a trusted parameter "white list" through.
     def joke_params
-      params.require(:joke).permit(:question, :punch_line)
+      params.require(:joke).permit(:question, :punch_line, :user_id)
     end
 end
